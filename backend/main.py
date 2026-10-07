@@ -1088,10 +1088,29 @@ def analyze_url(request: AnalyzeRequest):
             "no_warnings": True,
             "noplaylist": True,
             "force_ipv4": True,
-            "extractor_args": {"youtube": {"player_client": ["android"]}},
         }
-        with yt_dlp.YoutubeDL(common) as ydl:
-            info = ydl.extract_info(url, download=False)
+
+        # Let current yt-dlp choose its supported YouTube clients first.
+        # Our previous Android-only setting could trigger YouTube's bot/login
+        # challenge on hosted/cloud IP addresses.
+        extract_attempts = [
+            {},
+            {"extractor_args": {"youtube": {"player_client": ["tv", "web_embedded"]}}},
+        ]
+
+        info = None
+        last_extract_error = None
+        for extra in extract_attempts:
+            try:
+                probe_options = {**common, **extra}
+                with yt_dlp.YoutubeDL(probe_options) as ydl:
+                    info = ydl.extract_info(url, download=False)
+                break
+            except Exception as exc:
+                last_extract_error = exc
+
+        if info is None:
+            raise RuntimeError(str(last_extract_error) if last_extract_error else "YouTube extraction failed.")
         title = info.get("title", "Downloaded video")
         language = choose_subtitle_language(info)
         options = {
