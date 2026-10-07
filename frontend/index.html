@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MAIGO FINAL AI ASSISTANT</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#0b0b0b;color:#fff;font-family:Arial,Helvetica,sans-serif}
+.app{width:min(1100px,92%);margin:auto;padding:40px 0 80px}
+.logo{font-size:40px;font-weight:800}
+.subtitle{color:#888;margin-top:8px}
+.panel{margin-top:25px;padding:22px;background:#151515;border:1px solid #292929;border-radius:16px}
+h2{margin-top:0}
+.url-row{display:grid;grid-template-columns:1fr auto;gap:10px}
+input,select{width:100%;padding:13px;border-radius:10px;border:1px solid #333;background:#0e0e0e;color:#fff}
+button{padding:12px 18px;border:0;border-radius:10px;cursor:pointer;font-weight:700;background:#fff;color:#000}
+button:disabled{opacity:.5;cursor:not-allowed}
+.secondary{background:#292929;color:#fff}
+.status,.error{display:none;margin-top:15px;padding:12px;border-radius:10px}
+.status{background:#202020;color:#ddd}.error{background:#3b1515;color:#ffaaaa}
+video{width:100%;max-width:900px;margin-top:20px;border-radius:14px;background:#000}
+.recommendation,.clip,.short{margin-top:15px;padding:18px;background:#0f0f0f;border:1px solid #303030;border-radius:14px}
+.top{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}.rank{font-size:18px;font-weight:800}
+.score{padding:6px 10px;border-radius:999px;background:#292929;font-weight:800}
+.time{margin-top:10px;font-weight:800}.muted{color:#888}.label{margin-top:14px;font-weight:800}
+.buttons{display:flex;gap:10px;flex-wrap:wrap;margin-top:15px}.short video{max-width:420px}
+.badge{display:inline-block;padding:5px 9px;border-radius:999px;background:#292929;color:#ddd;font-size:13px;margin-top:8px}
+.feature-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.note{color:#999;font-size:13px;margin-top:8px;line-height:1.4}
+
+.download-btn{display:inline-block;padding:11px 15px;border-radius:10px;background:#fff;color:#000;text-decoration:none;font-weight:800;margin-top:12px}.package{background:#111;border:1px solid #303030;border-radius:12px;padding:12px}.package strong{display:block;margin-bottom:6px}.success-badge{background:#173b25!important}
+.caption-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:14px}
+.caption-card{min-height:150px;padding:12px;background:#0f0f0f;color:#fff;border:1px solid #303030;border-radius:14px;text-align:left;display:flex;flex-direction:column;justify-content:space-between;gap:10px;cursor:pointer;transition:.15s}
+.caption-card:hover{transform:translateY(-2px);background:#171717}
+.caption-card.selected{border-color:#fff;box-shadow:0 0 0 1px #fff inset}
+.caption-preview{min-height:75px;display:flex;align-items:center;justify-content:center;text-align:center;border-radius:10px;padding:8px;background:#050505;color:#fff;font-size:20px;font-weight:700;line-height:1.05}
+.wordpop-preview{font-family:"Arial Black",Arial,sans-serif;text-shadow:0 2px 4px #000}.wordpop-preview b{color:#ffff00}
+.classic-preview{font-family:Arial,sans-serif;font-weight:700}.punchy-preview{font-family:Impact,Arial Black,sans-serif;font-size:25px;text-shadow:0 3px 0 #000}.clean-preview{font-family:"Trebuchet MS",Arial,sans-serif;font-weight:700}.neon-preview{font-family:"Arial Black",Arial,sans-serif;color:#00ffff;text-shadow:0 0 10px #00ffff,2px 2px 0 #000}.meme-preview{font-family:Impact,Arial Black,sans-serif;font-size:27px;text-shadow:3px 3px 0 #000}.typewriter-preview{font-family:"Courier New",monospace;font-size:18px;font-weight:400}.minimal-preview{font-family:Arial,sans-serif;font-size:19px;font-weight:400}.off-preview{font-family:Arial,sans-serif;font-size:16px;font-weight:400;color:#777}
+.caption-name{font-weight:800;font-size:16px}.caption-desc{font-size:12px;color:#888}
+
+@media(max-width:700px){.url-row{grid-template-columns:1fr}.feature-grid{grid-template-columns:1fr}.logo{font-size:32px}}
+
+.live-preview-wrap{display:grid;grid-template-columns:minmax(260px,360px) 1fr;gap:18px;align-items:start;margin-top:18px}
+.live-preview{position:relative;width:100%;max-width:360px;aspect-ratio:9/16;border-radius:18px;overflow:hidden;background:#050505;border:1px solid #333;box-shadow:0 12px 35px rgba(0,0,0,.35)}
+.live-preview video{position:absolute;inset:0;width:100%;height:100%;margin:0;object-fit:cover}
+.live-preview::after{content:"";position:absolute;inset:0;background:linear-gradient(to bottom,rgba(0,0,0,.02) 40%,rgba(0,0,0,.18) 100%);pointer-events:none}
+.live-caption{position:absolute;left:16px;right:16px;bottom:110px;z-index:5;text-align:center;line-height:1.02;word-break:break-word}
+.live-caption .word{display:inline-block;margin:0 3px;transition:transform .18s ease,color .18s ease}
+.live-caption .word.active{transform:scale(1.09);color:var(--accent,#00ffff)}
+.live-preview-info{padding:18px;border:1px solid #303030;border-radius:14px;background:#0f0f0f;min-height:180px}
+.live-preview-info h3{margin-top:0}
+.preview-controls{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+.preview-controls button{background:#292929;color:#fff}
+@media(max-width:760px){.live-preview-wrap{grid-template-columns:1fr}.live-preview{max-width:300px}}
+
+/* V17 FINAL UI optimization */
+:root{--bg:#090a0d;--panel:#12141a;--panel2:#0d0f14;--line:#262a33;--muted:#8a909b;--soft:#1a1e26;--text:#f7f8fb}
+body{background:radial-gradient(circle at 50% -10%,#181d28 0,#0b0c10 35%,#08090b 70%);color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif}
+.app{width:min(1180px,94%);padding:24px 0 70px}
+.logo{font-size:36px;letter-spacing:-.03em}.version-pill{display:inline-block;font-size:11px;letter-spacing:.08em;padding:4px 8px;border:1px solid #3b414d;border-radius:999px;color:#aeb5c1;vertical-align:middle;margin-left:6px}
+.subtitle{margin-top:5px;color:var(--muted)}
+.panel{margin-top:14px;padding:17px;background:rgba(18,20,26,.94);border:1px solid var(--line);border-radius:15px;box-shadow:0 10px 28px rgba(0,0,0,.12)}
+h2{font-size:19px;margin:0 0 8px}.note{font-size:12px;color:var(--muted)}
+.url-row{gap:8px}input,select{padding:11px;border-radius:9px;border:1px solid #303641;background:#0c0e13}button{padding:10px 14px;border-radius:9px;transition:transform .12s ease,opacity .12s ease,background .12s ease}button:hover:not(:disabled){transform:translateY(-1px)}
+.buttons{gap:8px;margin-top:12px}.feature-grid{gap:10px}.recommendation,.clip,.short{margin-top:11px;padding:14px;border-radius:12px;background:#0d0f14;border-color:#2a2e36}.recommendation:first-child{border-color:#455063;box-shadow:0 0 0 1px rgba(255,255,255,.03) inset}
+.rank{font-size:16px}.score{font-size:12px;padding:5px 9px}.label{margin-top:10px;font-size:11px;color:#a9b0bd;letter-spacing:.08em}.time{margin-top:8px;font-size:13px}.short video{max-width:390px}.download-btn{padding:10px 13px}
+.caption-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:9px}.caption-card{min-height:136px;padding:10px;border-radius:12px}.caption-preview{min-height:64px;font-size:18px}.live-preview-wrap{grid-template-columns:minmax(220px,330px) 1fr;gap:14px}.live-preview{max-width:330px}
+.quickbar{position:sticky;top:12px;z-index:30;display:flex;align-items:center;justify-content:space-between;gap:14px;margin-top:16px;padding:11px 12px;border:1px solid #343a46;border-radius:14px;background:rgba(12,14,19,.84);backdrop-filter:blur(14px);box-shadow:0 12px 32px rgba(0,0,0,.24)}
+.quickbar-copy{display:flex;flex-direction:column;gap:2px;min-width:0}.quickbar-copy strong{font-size:13px}.quickbar-copy span{font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.quickbar-actions{display:flex;align-items:center}.quick-primary{background:#fff;color:#000;white-space:nowrap}
+.success-badge{font-size:11px}.status,.error{font-size:13px;padding:10px;border-radius:9px}.package,.live-preview-info{background:#0d0f14;border-color:#2a2e36}
+@media(max-width:950px){.caption-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:720px){.app{width:min(96%,620px);padding-top:16px}.logo{font-size:31px}.quickbar{top:8px}.quickbar-copy span{display:none}.quick-primary{padding:9px 11px}.url-row{grid-template-columns:1fr}.feature-grid{grid-template-columns:1fr}.caption-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.live-preview-wrap{grid-template-columns:1fr}.live-preview{max-width:290px}}
+@media(max-width:430px){.caption-grid{grid-template-columns:1fr}.quickbar{align-items:stretch}.quickbar-actions button{width:100%}.quickbar{flex-direction:column}}
+
+.ai-chat{display:grid;grid-template-columns:1fr auto;gap:9px;margin-top:12px}
+.ai-chat input{min-width:0}
+.ai-chat button{white-space:nowrap}
+.chat-suggestions{display:flex;gap:7px;flex-wrap:wrap;margin-top:9px}
+.chat-chip{background:#1a1e26;color:#e8ebf0;border:1px solid #303641;padding:7px 10px;font-size:12px}
+.chat-box{margin-top:11px;max-height:330px;overflow:auto;display:flex;flex-direction:column;gap:8px}
+.chat-msg{padding:10px 12px;border-radius:11px;border:1px solid #2a2e36;background:#0d0f14;font-size:13px;line-height:1.4;white-space:pre-wrap}
+.chat-msg.user{align-self:flex-end;background:#191d25;border-color:#363c48;max-width:88%}
+.chat-msg.ai{align-self:flex-start;max-width:92%}
+.chat-msg.ok{border-color:#315b3e}
+@media(max-width:560px){.ai-chat{grid-template-columns:1fr}.ai-chat button{width:100%}}
+
+</style>
+</head>
+<body>
+<div class="app">
+
+<div>
+<div class="brand-row">
+<div><div class="logo">MAIGO <span class="version-pill">FINAL AI</span></div><div class="subtitle">AI clipping studio · local-first workflow</div></div>
+</div>
+<div class="quickbar">
+  <div class="quickbar-copy"><strong id="quickProjectState">Ready to create</strong><span id="quickProjectHint">Analyze a video, then build the best Short.</span></div>
+  <div class="quickbar-actions"><button id="quickBestShort" class="quick-primary">🚀 Create Best Short</button></div>
+</div>
+</div>
+
+<div class="panel">
+<h2>🎥 Analyze a Video</h2>
+<div class="url-row">
+<input id="urlInput" type="url" value="https://youtu.be/Rg_65skPqvw?si=fCRzkBJcDy2_jXbe" placeholder="Paste a YouTube URL">
+<button id="analyzeButton">Analyze URL</button>
+</div>
+<div id="status" class="status"></div>
+<div id="error" class="error"></div>
+<video id="sourceVideo" controls style="display:none"></video>
+</div>
+
+<div class="panel">
+<h2>🤖 MAIGO AI Brain</h2>
+<p class="note">Local vision AI reviews sampled frames and transcript context to judge the best moments. Your video stays on your PC.</p>
+<div id="aiStatus" class="badge">Checking local AI...</div>
+<div class="buttons">
+<button id="aiCheckButton" class="secondary">🔎 Check AI</button>
+</div>
+</div>
+
+<div class="panel">
+<h2>💬 Ask MAIGO</h2>
+<p class="note">Tell MAIGO what to do in normal language. Examples: <b>“make a clip”</b>, <b>“make clip #3”</b>, <b>“make a 15-second clip”</b>, or <b>“make the best Short with Minecraft gameplay.”</b></p>
+<div class="ai-chat">
+<input id="aiChatInput" placeholder="Tell MAIGO what you want…">
+<button id="aiChatSend">🤖 Do it</button>
+</div>
+<div class="chat-suggestions">
+<button class="chat-chip" data-chat="Make a clip">Make a clip</button>
+<button class="chat-chip" data-chat="Make the best Short">Best Short</button>
+<button class="chat-chip" data-chat="Make clip #3">Clip #3</button>
+<button class="chat-chip" data-chat="Make a 15-second clip">15-second clip</button>
+</div>
+<div id="aiChatBox" class="chat-box"></div>
+</div>
+
+<div class="panel">
+<h2>🧠 MAIGO Suggestions</h2>
+<div class="buttons" style="margin-bottom:12px"><button id="bestShortButton">🚀 Create Best Short</button><span class="note" style="align-self:center">AI picks #1 and builds the finished 9:16 MP4.</span></div>
+<div id="recommendations" class="muted">Analyze a video to find promising moments.</div>
+</div>
+
+<div class="panel">
+<h2>🎮 Attention Gameplay</h2>
+<p class="note">Add gameplay below the main video in the 9:16 Short. Use gameplay you recorded yourself or have permission to use.</p>
+
+<div class="feature-grid">
+<div>
+<div class="label">Gameplay type</div>
+<select id="attentionMode">
+<option value="none">None</option>
+<option value="minecraft">Minecraft</option>
+<option value="subway">Subway Surfers</option>
+</select>
+</div>
+
+<div>
+<div class="label">Gameplay video</div>
+<input id="attentionFile" type="file" accept="video/*">
+</div>
+</div>
+
+<div class="buttons">
+<button id="uploadAttentionButton">⬆️ Upload Gameplay</button>
+</div>
+
+<div id="attentionStatus" class="muted" style="margin-top:12px">No attention gameplay loaded.</div>
+</div>
+
+<div class="panel">
+<h2>💬 Caption Style</h2>
+<p class="note">Click a preview to choose the caption look for your Short.</p>
+<select id="captionStyle" style="display:none">
+<option value="wordpop">Word Pop</option>
+<option value="classic">Classic</option>
+<option value="punchy">Punchy</option>
+<option value="clean">Clean</option>
+<option value="neon">Neon</option>
+<option value="meme">Meme</option>
+<option value="typewriter">Typewriter</option>
+<option value="minimal">Minimal</option>
+<option value="off">Off</option>
+</select>
+<div class="caption-grid" id="captionStyleGrid">
+<button type="button" class="caption-card selected" data-style="wordpop"><span class="caption-preview wordpop-preview">THIS <b>GOES</b> CRAZY</span><span class="caption-name">Word Pop</span><span class="caption-desc">Animated word emphasis</span></button>
+<button type="button" class="caption-card" data-style="classic"><span class="caption-preview classic-preview">This is the classic look</span><span class="caption-name">Classic</span><span class="caption-desc">Clean creator captions</span></button>
+<button type="button" class="caption-card" data-style="punchy"><span class="caption-preview punchy-preview">WAIT FOR IT!</span><span class="caption-name">Punchy</span><span class="caption-desc">Big, bold, high impact</span></button>
+<button type="button" class="caption-card" data-style="clean"><span class="caption-preview clean-preview">simple and modern</span><span class="caption-name">Clean</span><span class="caption-desc">Soft modern style</span></button>
+<button type="button" class="caption-card" data-style="neon"><span class="caption-preview neon-preview">THIS IS WILD</span><span class="caption-name">Neon</span><span class="caption-desc">Bright gaming style</span></button>
+<button type="button" class="caption-card" data-style="meme"><span class="caption-preview meme-preview">BRO WHAT?!</span><span class="caption-name">Meme</span><span class="caption-desc">Loud meme captions</span></button>
+<button type="button" class="caption-card" data-style="typewriter"><span class="caption-preview typewriter-preview">typing the moment</span><span class="caption-name">Typewriter</span><span class="caption-desc">Retro terminal feel</span></button>
+<button type="button" class="caption-card" data-style="minimal"><span class="caption-preview minimal-preview">Minimal text</span><span class="caption-name">Minimal</span><span class="caption-desc">Low-key and clean</span></button>
+<button type="button" class="caption-card" data-style="off"><span class="caption-preview off-preview">NO CAPTIONS</span><span class="caption-name">Off</span><span class="caption-desc">No text burned in</span></button>
+</div>
+
+<div class="live-preview-wrap">
+<div class="live-preview">
+<video id="livePreviewVideo" muted playsinline></video>
+<div id="liveCaption" class="live-caption"><span class="word">THIS</span> <span class="word active">GOES</span> <span class="word">CRAZY</span></div>
+</div>
+<div class="live-preview-info">
+<h3>👀 Live Caption Preview</h3>
+<div id="livePreviewName">Word Pop</div>
+<div id="livePreviewDescription" class="note">Animated word emphasis</div>
+<div class="preview-controls">
+<button type="button" id="previewPlayButton">▶ Play Preview</button>
+<button type="button" id="previewRestartButton">↺ Restart</button>
+</div>
+<div class="note" style="margin-top:12px">Select a caption style above. The preview updates instantly and uses the selected recommendation's caption after analysis.</div>
+</div>
+</div>
+
+<h2 style="margin-top:20px">🎯 Smart Framing</h2>
+<p class="note">Motion-aware framing shifts the 9:16 crop toward the active part of the video. When Background Fill is On, MAIGO preserves the source and uses blurred top/bottom fill; turn Blur Off for the full smart crop.</p>
+<select id="smartFraming">
+<option value="on">On — recommended</option>
+<option value="off">Off — center crop</option>
+</select>
+</div>
+
+<div class="panel">
+<h2>⚙️ Final Short Controls</h2>
+<p class="note">These settings are used by <b>Create Best Short</b>. No extra AI download is required.</p>
+<div class="feature-grid">
+<div><div class="label">Export quality</div><select id="exportQuality"><option value="fast">Fast • 720p</option><option value="balanced" selected>Balanced • 1080p</option><option value="high">High • 1080p</option></select></div>
+<div><div class="label">Caption position</div><select id="captionPosition"><option value="top">Top</option><option value="middle">Middle</option><option value="bottom" selected>Bottom</option></select></div>
+<div><div class="label">Caption size</div><select id="captionSize"><option value="small">Small</option><option value="medium" selected>Medium</option><option value="large">Large</option></select></div>
+<div><div class="label">Opening AI hook</div><select id="hookOverlay"><option value="on" selected>On • show hook</option><option value="off">Off</option></select></div>
+<div><div class="label">Background fill</div><select id="backgroundBlur"><option value="on" selected>On • top/bottom blur</option><option value="off">Off • full 9:16 crop</option></select></div>
+</div>
+<div id="contentPackage" class="live-preview-info" style="margin-top:16px;min-height:120px"><h3>🧠 AI Content Package</h3><div class="note">Analyze a video to generate the best hook, caption and hashtags.</div></div>
+</div>
+
+<div class="panel">
+<h2>✂️ Create a Clip</h2>
+<div class="feature-grid">
+<div><div class="label">Start time</div><input id="startTime" type="number" value="0" min="0" step="0.1"></div>
+<div><div class="label">End time</div><input id="endTime" type="number" value="30" min="0" step="0.1"></div>
+</div>
+<div class="buttons">
+<button id="manualClipButton">✂️ Create Clip</button>
+<button id="refreshButton" class="secondary">🔄 Generate Recommendations</button>
+<button id="newButton" class="secondary">+ New Project</button>
+</div>
+</div>
+
+<div class="panel">
+<h2>🎬 Created Clips</h2>
+<div id="clips"><div class="muted">Created clips will appear here.</div></div>
+</div>
+
+<div class="panel">
+<h2>📱 9:16 Shorts</h2>
+<div id="shorts"><div class="muted">Your vertical Shorts will appear here.</div></div>
+</div>
+
+</div>
+
+<script>
+const API=((location.port==="5500"||location.protocol==="file:") ? "http://127.0.0.1:8000" : "");
+const TEST_URL="https://youtu.be/Rg_65skPqvw?si=fCRzkBJcDy2_jXbe";
+let currentFileId=null;
+let currentDuration=0;
+const attentionVideos={minecraft:null,subway:null};
+
+const el=id=>document.getElementById(id);
+const urlInput=el("urlInput"), analyzeButton=el("analyzeButton"), statusBox=el("status"), errorBox=el("error"), sourceVideo=el("sourceVideo");
+const recommendationsBox=el("recommendations"), startInput=el("startTime"), endInput=el("endTime"), manualClipButton=el("manualClipButton");
+const refreshButton=el("refreshButton"), newButton=el("newButton"), clipsBox=el("clips"), shortsBox=el("shorts");
+const attentionMode=el("attentionMode"), attentionFile=el("attentionFile"), uploadAttentionButton=el("uploadAttentionButton"), attentionStatus=el("attentionStatus"), smartFraming=el("smartFraming"), captionStyle=el("captionStyle");
+const aiStatus=el("aiStatus"), aiCheckButton=el("aiCheckButton"), bestShortButton=el("bestShortButton");
+const aiChatInput=el("aiChatInput"), aiChatSend=el("aiChatSend"), aiChatBox=el("aiChatBox");
+const exportQuality=el("exportQuality"), captionPosition=el("captionPosition"), captionSize=el("captionSize"), hookOverlay=el("hookOverlay"), contentPackage=el("contentPackage");
+const captionCards=Array.from(document.querySelectorAll(".caption-card"));
+const livePreviewVideo=el("livePreviewVideo"),liveCaption=el("liveCaption"),livePreviewName=el("livePreviewName"),livePreviewDescription=el("livePreviewDescription"),previewPlayButton=el("previewPlayButton"),previewRestartButton=el("previewRestartButton");
+const previewStyles={
+wordpop:{name:"Word Pop",description:"Animated word emphasis",font:'Arial Black,Arial,sans-serif',size:"30px",weight:"900",color:"#fff",accent:"#00ffff",shadow:"0 4px 0 #111"},
+classic:{name:"Classic",description:"Clean creator captions",font:'Arial,Arial,sans-serif',size:"29px",weight:"700",color:"#fff",accent:"#fff",shadow:"0 3px 0 #111"},
+punchy:{name:"Punchy",description:"Big, bold, high impact",font:'Impact,Arial Black,sans-serif',size:"32px",weight:"900",color:"#fff",accent:"#00ffff",shadow:"0 5px 0 #000"},
+clean:{name:"Clean",description:"Soft modern style",font:'Trebuchet MS,Arial,sans-serif',size:"28px",weight:"700",color:"#fff",accent:"#00ffff",shadow:"0 3px 0 #151515"},
+neon:{name:"Neon",description:"Bright gaming style",font:'Arial Black,Arial,sans-serif',size:"29px",weight:"900",color:"#fff",accent:"#00ffff",shadow:"0 0 10px #ff00ff"},
+meme:{name:"Meme",description:"Loud meme captions",font:'Impact,Arial Black,sans-serif',size:"34px",weight:"900",color:"#fff",accent:"#00ffff",shadow:"4px 4px 0 #000"},
+typewriter:{name:"Typewriter",description:"Retro terminal feel",font:'Courier New,monospace',size:"24px",weight:"400",color:"#fff",accent:"#fff",shadow:"0 2px 0 #111"},
+minimal:{name:"Minimal",description:"Low-key and clean",font:'Arial,Arial,sans-serif',size:"25px",weight:"400",color:"#fff",accent:"#fff",shadow:"0 2px 0 #000"},
+off:{name:"Off",description:"No text burned in",font:'Arial,Arial,sans-serif',size:"20px",weight:"400",color:"#777",accent:"#777",shadow:"none"}
+};
+let previewText="THIS GOES CRAZY";
+let previewTimer=null;
+let currentRecommendationStart=null;
+function updateLivePreview(){
+const cfg=previewStyles[captionStyle.value]||previewStyles.wordpop;
+livePreviewName.textContent=cfg.name;
+livePreviewDescription.textContent=cfg.description;
+liveCaption.style.fontFamily=cfg.font;
+liveCaption.style.fontSize=cfg.size;
+liveCaption.style.fontWeight=cfg.weight;
+liveCaption.style.color=cfg.color;
+liveCaption.style.textShadow=cfg.shadow;
+liveCaption.style.setProperty("--accent",cfg.accent);
+liveCaption.innerHTML="";
+if(captionStyle.value==="off"){liveCaption.style.display="none";return;}
+liveCaption.style.display="block";
+previewText.split(/\s+/).filter(Boolean).forEach((word,i)=>{const s=document.createElement("span");s.className="word"+(i===0?" active":"");s.textContent=word;liveCaption.appendChild(s)});
+}
+function animateLivePreview(){
+clearInterval(previewTimer);
+if(captionStyle.value==="off")return;
+const words=Array.from(liveCaption.querySelectorAll(".word"));
+if(!words.length)return;
+let i=0;
+previewTimer=setInterval(()=>{words.forEach((w,j)=>w.classList.toggle("active",j===i));i=(i+1)%words.length},650);
+}
+function setLivePreviewText(text){if(text&&text.trim())previewText=text.trim();updateLivePreview();animateLivePreview();}
+captionCards.forEach(card=>card.addEventListener("click",()=>{captionStyle.value=card.dataset.style;captionCards.forEach(c=>c.classList.toggle("selected",c===card));updateLivePreview();animateLivePreview();showStatus(`💬 Caption style selected: ${card.querySelector(".caption-name").textContent}`)}));
+previewPlayButton.onclick=()=>{if(!currentFileId){showError("Analyze a video first to preview the selected caption on real footage.");return;}if(currentRecommendationStart!==null)livePreviewVideo.currentTime=currentRecommendationStart;livePreviewVideo.play().catch(()=>{});animateLivePreview()};
+previewRestartButton.onclick=()=>{if(!currentFileId){showError("Analyze a video first to preview the selected caption on real footage.");return;}livePreviewVideo.currentTime=Math.max(0,currentRecommendationStart||0);livePreviewVideo.play().catch(()=>{});animateLivePreview()};
+function showStatus(message){statusBox.textContent=message;statusBox.style.display="block";errorBox.style.display="none"}
+function showError(message){errorBox.textContent=message;errorBox.style.display="block"}
+function clearMessages(){statusBox.style.display="none";errorBox.style.display="none"}
+function formatTime(seconds){seconds=Math.max(0,Math.floor(Number(seconds)||0));return String(Math.floor(seconds/60)).padStart(2,"0")+":"+String(seconds%60).padStart(2,"0")}
+
+async function api(endpoint,options={}){
+const response=await fetch(API+endpoint,options);
+let data={};
+try{data=await response.json()}catch{}
+if(!response.ok){
+ let detail=data?.detail;
+ if(Array.isArray(detail)){
+   detail=detail.map(x=>x?.msg||x?.detail||JSON.stringify(x)).join("; ");
+ }else if(detail && typeof detail === "object"){
+   detail=detail.msg||detail.detail||JSON.stringify(detail);
+ }
+ throw new Error(detail||`HTTP ${response.status}`);
+}
+return data;
+}
+
+
+function addChatMessage(role,text,ok=false){
+const div=document.createElement("div");div.className=`chat-msg ${role}${ok?" ok":""}`;div.textContent=text;aiChatBox.appendChild(div);aiChatBox.scrollTop=aiChatBox.scrollHeight;return div;
+}
+
+function chatSettings(){
+const mode=attentionMode.value;
+return {
+ attention_mode:mode,
+ attention_video_id:mode!=="none"?attentionVideos[mode]:null,
+ smart_framing:smartFraming.value,
+ caption_style:captionStyle.value,
+ caption_position:captionPosition.value,
+ caption_size:captionSize.value,
+ hook_overlay:hookOverlay.value,
+ export_quality:exportQuality.value,
+ background_blur:backgroundBlur.value,
+ blur_strength:18
+};
+}
+
+async function askMAIGO(){
+const message=aiChatInput.value.trim();
+if(!message)return;
+addChatMessage("user",message);
+aiChatInput.value="";
+aiChatSend.disabled=true;aiChatSend.textContent="⏳ Thinking…";
+const thinking=addChatMessage("ai","MAIGO is thinking…");
+try{
+const data=await api("/api/ai-chat",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({file_id:currentFileId,message,recommendations:window.latestRecommendations||[],settings:chatSettings()})});
+thinking.remove();
+addChatMessage("ai",data.reply||"Done.",!!data.executed);
+if(data.executed){
+const result=data.result||{};
+if(data.action==="create_clip"&&result.file){addClip(result);}
+if(data.action==="create_short"&&result.short){addShort(result.short,result.recommendation||window.latestRecommendations?.[0]);}
+if(data.action==="create_best_short"&&result.short){addShort(result.short,result.best||window.latestRecommendations?.[0]);}
+showStatus(`🤖 MAIGO completed: ${data.action.replaceAll("_"," ")}`);
+}
+}catch(err){thinking.remove();addChatMessage("ai","❌ "+err.message);showError("MAIGO assistant failed: "+err.message)}finally{aiChatSend.disabled=false;aiChatSend.textContent="🤖 Do it";}
+}
+
+aiChatSend.onclick=askMAIGO;
+aiChatInput.onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();askMAIGO()}};
+document.querySelectorAll(".chat-chip").forEach(btn=>btn.onclick=()=>{aiChatInput.value=btn.dataset.chat;askMAIGO()});
+
+async function checkAI(){
+try{
+const data=await api("/api/ai-status");
+if(data.model_ready){aiStatus.textContent=`🤖 AI Ready — ${data.model}`;aiStatus.style.background="#173b25";}
+else{aiStatus.textContent=`⚠️ ${data.message}`;aiStatus.style.background="#3b2d12";}
+return data;
+}catch(err){aiStatus.textContent="⚠️ Local AI unavailable";aiStatus.style.background="#3b1515";return null;}
+}
+
+aiCheckButton.onclick=checkAI;
+
+async function analyze(){
+clearMessages();
+const url=urlInput.value.trim();
+if(!url){showError("Paste a video URL first.");return}
+analyzeButton.disabled=true;analyzeButton.textContent="⏳ Analyzing...";quickProjectState.textContent="Analyzing video…";quickProjectHint.textContent="Downloading, detecting moments, and asking local AI to rank them.";showStatus("⬇️ Downloading and analyzing video...");
+try{
+const data=await api("/api/analyze-url",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({url})});
+currentFileId=data.file_id;
+currentDuration=data.video?.duration_seconds||0;
+sourceVideo.src=`${API}/uploads/${currentFileId}.mp4`;
+sourceVideo.style.display="block";
+sourceVideo.load();
+endInput.value=Math.min(30,currentDuration);
+showStatus(`✅ Video analyzed: ${data.title||"Video"} — ${formatTime(currentDuration)}`);quickProjectState.textContent="Video ready ✓";quickProjectHint.textContent="MAIGO is ranking the strongest moments now.";
+await generateRecommendations();
+}catch(err){showError("Analyze failed: "+err.message)}finally{analyzeButton.disabled=false;analyzeButton.textContent="Analyze URL"}
+}
+
+async function generateRecommendations(){
+if(!currentFileId){showError("Analyze a video first.");return}
+recommendationsBox.innerHTML="🧠 MAIGO is finding promising moments...";
+try{
+const data=await api("/api/recommendations",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({file_id:currentFileId})});
+if(data.ai_enabled){aiStatus.textContent=`🤖 AI Vision reviewed top moments — ${data.ai_model}`;aiStatus.style.background="#173b25";}
+else if(data.ai_message){aiStatus.textContent=`⚠️ ${data.ai_message}`;aiStatus.style.background="#3b2d12";}
+renderRecommendations(data.recommendations||[]);quickProjectState.textContent=(data.recommendations?.length?"AI shortlist ready ✓":"No strong moments found");quickProjectHint.textContent=data.recommendations?.length?"Choose a style, adjust the final controls, then create the best Short.":"Try another video or regenerate recommendations.";
+}catch(err){showError("Recommendation error: "+err.message)}
+}
+
+function renderContentPackage(best){
+if(!best){contentPackage.innerHTML='<h3>🧠 AI Content Package</h3><div class="note">No AI package yet.</div>';return;}
+contentPackage.innerHTML=`<h3>🧠 AI Content Package</h3><div class="package"><strong>HOOK</strong><div>${escapeHtml(best.hook||'')}</div><strong style="margin-top:10px">CAPTION</strong><div>${escapeHtml(best.caption||'')}</div><strong style="margin-top:10px">HASHTAGS</strong><div class="muted">${escapeHtml((best.hashtags||[]).join(' '))}</div></div>`;
+}
+function escapeHtml(value){return String(value??'').replace(/[&<>"]?/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':'&quot;'}[m]||m));}
+
+function renderRecommendations(list){
+window.latestRecommendations=Array.isArray(list)?list:[];
+recommendationsBox.innerHTML="";
+if(list.length){
+currentRecommendationStart=list[0].start;
+setLivePreviewText(list[0].caption||"THIS GOES CRAZY");
+if(currentFileId){livePreviewVideo.src=`${API}/uploads/${currentFileId}.mp4`;livePreviewVideo.load();livePreviewVideo.currentTime=Math.max(0,list[0].start)}
+}
+if(!list.length){recommendationsBox.textContent="No recommendations found.";return}
+list.forEach(r=>{
+const card=document.createElement("div");card.className="recommendation";
+card.innerHTML=`<div class="top"><div class="rank">🔥 Recommended Clip #${r.rank}${r.ai_reviewed?" 🤖":""}</div><div class="score">${r.score}/100</div></div><div class="time">${formatTime(r.start)} → ${formatTime(r.end)}</div><p>${r.reason||""}</p><div class="label">HOOK</div><div>${r.hook||""}</div><div class="label">CAPTION</div><div>${r.caption||""}</div><div class="label">HASHTAGS</div><div class="muted">${(r.hashtags||[]).join(" ")}</div>`;
+const buttons=document.createElement("div");buttons.className="buttons";
+const preview=document.createElement("button");preview.textContent="▶ Preview";preview.onclick=()=>{currentRecommendationStart=r.start;setLivePreviewText(r.caption||"THIS GOES CRAZY");if(currentFileId){livePreviewVideo.src=`${API}/uploads/${currentFileId}.mp4`;livePreviewVideo.load();livePreviewVideo.currentTime=Math.max(0,r.start)}sourceVideo.currentTime=r.start;sourceVideo.scrollIntoView({behavior:"smooth",block:"center"});sourceVideo.play().catch(()=>{})};buttons.appendChild(preview);
+const clip=document.createElement("button");clip.className="secondary";clip.textContent="✂️ Create Clip";clip.onclick=()=>createNormalClip(r.start,r.end,clip);buttons.appendChild(clip);
+const short=document.createElement("button");short.textContent="📱 Make 9:16 Short";short.onclick=()=>createShort(r.start,r.end,r,short);buttons.appendChild(short);
+card.appendChild(buttons);recommendationsBox.appendChild(card);
+});
+}
+
+
+async function createBestShort(){
+if(!currentFileId){showError("Analyze a video first.");return}
+const best=window.latestRecommendations?.[0];
+if(!best){showError("Generate recommendations first so MAIGO knows the #1 moment.");return}
+const mode=attentionMode.value;
+const attentionId=mode!=="none"?attentionVideos[mode]:null;
+if(mode!=="none"&&!attentionId){showError(`Upload your ${mode==="minecraft"?"Minecraft":"Subway Surfers"} gameplay first.`);return}
+bestShortButton.disabled=true;
+bestShortButton.textContent="⏳ Rendering #1...";
+showStatus(`🚀 Rendering MAIGO #1 — ${formatTime(best.start)} → ${formatTime(best.end)}...`);
+try{
+const data=await api("/api/create-best-short",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({file_id:currentFileId,start:Number(best.start),end:Number(best.end),score:Number(best.score)||0,hook:best.hook||"",caption:best.caption||"",hashtags:best.hashtags||[],attention_video_id:attentionId,attention_mode:mode,smart_framing:smartFraming.value==="on",caption_style:captionStyle.value,caption_position:captionPosition.value,caption_size:captionSize.value,hook_overlay:hookOverlay.value==="on",resolution:exportQuality.value==="fast"?"720":"1080",quality:exportQuality.value,background_blur:backgroundBlur.value==="on",blur_strength:18})});
+if(data.ai_enabled){aiStatus.textContent=`🤖 AI #1 ready — ${data.ai_model}`;aiStatus.style.background="#173b25";}
+const short=data.short||{};
+showStatus(`🔥 Best Short ready — ${formatTime(best.start)} → ${formatTime(best.end)} • Score ${best.score||"?"}/100`);
+addShort(short,best);
+bestShortButton.disabled=false;bestShortButton.textContent="🚀 Create Best Short Again";
+quickProjectState.textContent="Best Short ready ✓";quickProjectHint.textContent=`Score ${best.score||"?"}/100 · ${formatTime(best.start)} → ${formatTime(best.end)}`;
+}catch(err){bestShortButton.disabled=false;bestShortButton.textContent="🚀 Create Best Short";showError("Best Short failed: "+err.message)}
+}
+
+bestShortButton.onclick=createBestShort;
+const quickBestShort=el("quickBestShort");quickBestShort.onclick=()=>bestShortButton.click();
+
+async function uploadAttentionGameplay(){
+clearMessages();
+const mode=attentionMode.value;
+const file=attentionFile.files?.[0];
+if(mode==="none"){showError("Choose Minecraft or Subway Surfers first.");return}
+if(!file){showError("Choose a gameplay video first.");return}
+uploadAttentionButton.disabled=true;uploadAttentionButton.textContent="⏳ Uploading...";
+attentionStatus.textContent="Uploading gameplay...";
+try{
+const form=new FormData();form.append("file",file);
+const data=await api("/api/upload",{method:"POST",body:form});
+attentionVideos[mode]=data.file_id;
+attentionStatus.textContent=`✅ ${mode==="minecraft"?"Minecraft":"Subway Surfers"} gameplay loaded.`;
+showStatus("✅ Attention gameplay is ready for 9:16 Shorts.");
+}catch(err){attentionStatus.textContent="Upload failed.";showError("Gameplay upload failed: "+err.message)}finally{uploadAttentionButton.disabled=false;uploadAttentionButton.textContent="⬆️ Upload Gameplay"}
+}
+
+async function createNormalClip(start,end,button){
+if(!currentFileId){showError("Analyze a video first.");return}
+button.disabled=true;button.textContent="⏳ Creating...";
+try{const data=await api("/api/create-clip",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({file_id:currentFileId,start:Number(start),end:Number(end)})});showStatus(`✅ Clip created: ${formatTime(data.start)} → ${formatTime(data.end)}`);addClip(data);button.textContent="✅ Created"}catch(err){button.disabled=false;button.textContent="✂️ Create Clip";showError("Clip creation failed: "+err.message)}
+}
+
+async function createShort(start,end,r,button){
+if(!currentFileId){showError("Analyze a video first.");return}
+const mode=attentionMode.value;
+const attentionId=mode!=="none"?attentionVideos[mode]:null;
+if(mode!=="none"&&!attentionId){showError(`Upload your ${mode==="minecraft"?"Minecraft":"Subway Surfers"} gameplay first.`);return}
+button.disabled=true;button.textContent="⏳ Making Short...";showStatus("📱 MAIGO is creating the 9:16 Short...");
+try{
+const data=await api("/api/create-short",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({file_id:currentFileId,start:Number(start),end:Number(end),attention_video_id:attentionId,attention_mode:mode,smart_framing:smartFraming.value==="on",caption_style:captionStyle.value,background_blur:backgroundBlur.value==="on",blur_strength:18})});
+showStatus(`✅ 9:16 Short created — ${formatTime(data.start)} → ${formatTime(data.end)}`);addShort(data,r);button.textContent="✅ Short Created";
+}catch(err){button.disabled=false;button.textContent="📱 Make 9:16 Short";showError("Short creation failed: "+err.message)}
+}
+
+function addClip(data){
+const placeholder=clipsBox.querySelector(".muted");if(placeholder)clipsBox.innerHTML="";
+const card=document.createElement("div");card.className="clip";
+card.innerHTML=`<h3>🎬 Created Clip</h3><div class="muted">${formatTime(data.start)} → ${formatTime(data.end)}</div>`;
+const video=document.createElement("video");video.controls=true;video.src=`${API}${data.file}`;card.appendChild(video);clipsBox.prepend(card);
+}
+
+function addShort(data,r){
+const placeholder=shortsBox.querySelector(".muted");if(placeholder)shortsBox.innerHTML="";
+const card=document.createElement("div");card.className="short";
+const title=document.createElement("h3");title.textContent="📱 9:16 Short • READY";card.appendChild(title);
+const badge=document.createElement("span");badge.className="badge success-badge";badge.textContent=data.attention_gameplay?`${data.attention_mode==="minecraft"?"Minecraft":"Subway Surfers"} • Split-screen${data.background_blur?" • Blur":""}${!data.background_blur&&data.smart_framing?" • Smart":""}`:(data.background_blur?"9:16 • Blur Fill":(data.smart_framing?"9:16 • Smart Framing":"9:16"));card.appendChild(badge);
+const time=document.createElement("div");time.className="muted";time.textContent=`${formatTime(data.start)} → ${formatTime(data.end)} • ${data.resolution||"1080"}p • ${data.quality||"balanced"}`;card.appendChild(time);
+const video=document.createElement("video");video.controls=true;video.playsInline=true;video.src=`${API}${data.file}`;card.appendChild(video);
+if(r?.hook){const hook=document.createElement("p");hook.innerHTML=`<b>Hook:</b> ${escapeHtml(r.hook)}`;card.appendChild(hook)}
+if(r?.caption){const caption=document.createElement("p");caption.innerHTML=`<b>Caption:</b> ${escapeHtml(r.caption)}`;card.appendChild(caption)}
+if(r?.hashtags){const tags=document.createElement("p");tags.className="muted";tags.textContent=r.hashtags.join(" ");card.appendChild(tags)}
+const download=document.createElement("a");download.className="download-btn";download.href=`${API}${data.file}`;download.download="maigo-best-short.mp4";download.textContent="⬇️ Download MP4";card.appendChild(download);
+shortsBox.prepend(card);card.scrollIntoView({behavior:"smooth",block:"center"});
+}
+
+manualClipButton.onclick=()=>{const s=Number(startInput.value),e=Number(endInput.value);if(!Number.isFinite(s)||!Number.isFinite(e)||e<=s){showError("Enter valid clip times.");return}createNormalClip(s,e,manualClipButton)};
+analyzeButton.onclick=analyze;
+urlInput.onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();analyze()}};
+refreshButton.onclick=generateRecommendations;
+uploadAttentionButton.onclick=uploadAttentionGameplay;
+newButton.onclick=()=>{currentFileId=null;quickProjectState.textContent="Ready to create";quickProjectHint.textContent="Analyze a video, then build the best Short.";currentDuration=0;urlInput.value=TEST_URL;sourceVideo.pause();sourceVideo.removeAttribute("src");sourceVideo.load();sourceVideo.style.display="none";recommendationsBox.innerHTML="Analyze a video to find promising moments.";contentPackage.innerHTML='<h3>🧠 AI Content Package</h3><div class="note">Analyze a video to generate the best hook, caption and hashtags.</div>';clipsBox.innerHTML='<div class="muted">Created clips will appear here.</div>';shortsBox.innerHTML='<div class="muted">Your vertical Shorts will appear here.</div>';clearMessages()};
+
+console.log("🔥 MAIGO FINAL AI ASSISTANT loaded");
+checkAI();
+</script>
+</body>
+</html>
